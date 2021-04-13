@@ -1,0 +1,15 @@
+{% extends 'basic/index.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block content %}
+<div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center mt-5">
+      <h1 class="display-4">ТЕЛЕФОННЫЙ СПРАВОЧНИК</h1>
+      <p class="lead">сотрудников подведомственных организаций Федерального агентства водных ресурсов по состоянию на {{time}}</p>
+</div>
+
+<ul class="list-group">
+  {% for department in departments %}
+    <a href="{% url 'detail-dep-2' department.id %}"><li class="list-group-item text-center"><b>{{department.name}}</b></li></a>
+  {% endfor %}
+</ul>
+{% endblock %}

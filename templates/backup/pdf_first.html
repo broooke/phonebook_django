@@ -1,0 +1,54 @@
+<html>
+{% load static %}
+<head>
+<meta charset="UTF-8">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+<style type="text/css">
+@font-face { font-family: Arial; src: url('{% static 'fonts/9041.ttf' %}'); }
+    body{
+      font-family: Arial, sans-serif;
+    }
+ table, th, td {border: 1px solid black; padding: 2px;}
+</style>
+<body>
+   <table class="table table-bordered table-light">
+  <thead>
+    <tr>
+      <th class="text-center" scope="col">ФИО</th>
+      <th class="text-center" scope="col">Должность</th>
+      <th class="text-center" scope="col">Городской номер телефона</th>
+      <th class="text-center" scope="col">Внутренний номер телефона</th>
+      <th class="text-center" scope="col">Номер кабинета</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for department in departments %}
+    <tr>
+      <th style="font-size: 20px; font-weight: 900; background-color: black; color:white;" class="text-center bg-dark" colspan="5">{{department.name}}</th>
+    </tr>
+    {% for sub_department in department.sub_department.all %}
+    <tr>
+      <th style="font-size: 13px; background-color: gray; color:white;" class="text-center bg-secondary" colspan="5">{{sub_department.name}}</th>
+    </tr>
+      {% for customer in sub_department.user_sub_department.all %}
+      {% if customer.department == department %}
+        <tr>
+          <th class="text-center">{{customer.name}}</th>
+          <th class="text-center">{{customer.position}}</th>
+          <th class="text-center">{{customer.city_phone_number}}</th>
+          <th class="text-center">{{customer.inner_phone_number}}</th>
+          <th class="text-center">{{customer.number_room}}</th>
+        </tr>
+      {% else %}
+      {% endif %}
+      {% endfor %}
+    {% endfor %}
+  {% endfor %}
+  </tbody>
+</table>
+</body>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</html>

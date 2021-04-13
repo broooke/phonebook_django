@@ -1,0 +1,139 @@
+{% extends 'basic/index.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block content %}
+<style type="text/css">
+	#div_id_name, #id_name{
+		overflow-y: scroll;
+		max-height: 100px;
+		border-radius: 5px;
+		padding: 5px;
+		border:1px solid white;
+		color: white;
+	}
+  .controls{
+    display: grid;
+  }
+
+  .nav-add-buttons{
+    display: flex;
+    justify-content: space-evenly;
+  }
+</style>
+
+<div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center mt-5">
+      <h1 class="display-4">ЛИЧНЫЙ КАБИНЕТ</h1>
+      <p class="lead">сотрудников управления "{{request.user.first_name}}"</p>
+</div>
+
+<div class="container">
+  <div id="exportContent">
+      <table id="toExcel" class="table table-bordered mt-3">
+        <thead>
+          <tr>
+            <th colspan="3" class="text-center" scope="col">
+              <a href="{% url 'create-customer-1' %}"><button type="button" class="btn btn-outline-success btn-block">Добавить сотрудника</button></a>
+            </th>
+            <th colspan="3" class="text-center" scope="col">
+              <a href="{% url 'create-subdepartment-1' %}"><button type="button" class="btn btn-outline-success btn-block">Добавить отдел</button></a>
+            </th>
+            <th colspan="3" class="text-center" scope="col">
+              <div class="dropdown">
+                <a class="btn btn-outline-danger dropdown-toggle btn-block" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+                  Удаление отдела
+                </a>
+
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                  <li class="text-center"><b>Выберите отдел</b></li>
+                  <li><hr class="dropdown-divider"></li>
+                  {% for sub_department in department.sub_department.all %}
+                  <li><button type="button" class="btn btn-light dropdown-item" data-bs-toggle="modal" data-bs-target="#staticBackdropDep{{sub_department.id}}">{{sub_department.name}}</button></li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <thead>
+          <tr>
+            <th class="text-center" scope="col">ФИО</th>
+            <th class="text-center" scope="col">Должность</th>
+            <th class="text-center" scope="col">Городской номер телефона</th>
+            <th class="text-center" scope="col">Внутренний номер телефона</th>
+            <th class="text-center" scope="col">Факс</th>
+	    <th class="text-center" scope="col">Номер кабинета</th>
+	    <th class="text-center" scope="col">Адрес электронной почты</th>
+            <th class="text-center" scope="col">Редактировать</th>
+            <th class="text-center" scope="col">Удалить</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th style="font-size: 22px; color: white;" class="text-center bg-dark " colspan="9">{{department.name}}</th>
+          </tr>
+          {% for sub_department in department.sub_department.all %}
+          <tr>
+            <th style="color: white;" class="text-center bg-secondary" colspan="9">{{sub_department.name}} <a href="{% url 'update-subdepartment-1' sub_department.id %}"><button type="button" class="btn btn-outline-warning btn-small"><i class="material-icons cart-icon">edit</i></button></a></th>
+          </tr>
+
+          <div class="modal fade" id="staticBackdropDep{{sub_department.id}}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="staticBackdropLabel1">Подтверждение удаления</h5>
+                  <button type="button" class="btn-close text-center" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  Подтвердите удаление отдела "{{sub_department.name}}"
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Отменить</button>
+                  <a href="{% url 'delete-subdepartment-1' sub_department.id %}"><button type="button" class="btn btn-danger">Удалить</button></a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+            {% for customer in sub_department.user_sub_department.all %}
+            {% if customer.department == department %}
+              <tr>
+                <td class="text-center">{{customer.name}}</td>
+                <td class="text-center">{{customer.position}}</td>
+                <td class="text-center">{{customer.city_phone_number}}</td>
+                <td class="text-center">{{customer.inner_phone_number}}</td>
+                <td class="text-center">{{customer.fax}}</td>
+		<td class="text-center">{{customer.number_room}}</td>
+		<td class="text-center">{{customer.email}}</td>
+                <td class="text-center"><a href="{% url 'update-customer-1' customer.id %}"><button type="button" class="btn btn-warning"><i class="material-icons cart-icon">edit</i></button></a></td>
+                <td class="text-center"><button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#staticBackdrop{{customer.id}}"><i class="material-icons cart-icon">remove_circle_outline</i></button></td>
+              </tr>
+
+              <div class="modal fade" id="staticBackdrop{{customer.id}}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="staticBackdropLabel">Подтверждение удаления</h5>
+                      <button type="button" class="btn-close text-center" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      Подтвердите удаление сотрудника "{{customer.name}}"
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Отменить</button>
+                      <a href="{% url 'delete-customer-1' customer.id %}"><button type="button" class="btn btn-danger">Удалить</button></a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% else %}
+            {% endif %}
+            {% endfor %}
+          {% endfor %}
+        </tbody>
+      </table>
+  </div>
+</div>
+<script type="text/javascript">
+  $('tbody').sortable();
+</script>
+{% endblock %}

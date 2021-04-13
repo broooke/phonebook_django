@@ -1,0 +1,164 @@
+{% extends 'basic/index.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block sidebar %}
+<h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+          <span>Скачать отчет - "Территориальные органы"</span>
+          <a class="link-secondary" href="#" aria-label="Add a new report">
+            <span data-feather="plus-circle"></span>
+          </a>
+        </h6>
+        <ul class="nav flex-column mb-2">
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'pdf_download_2' %}">
+              <span class="material-icons">description</span>
+              В формате PDF
+              <div id="passwordHelpBlock" class="form-text">
+                Отчет по всем территориальным органам
+              </div>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'pdf_download_detail_2' department.id %}">
+              <span class="material-icons">description</span>
+              В формате PDF
+              <div id="passwordHelpBlock3" class="form-text">
+                Отчет по управлению "{{department.name}}"
+              </div>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="exceller()">
+              <span class="material-icons">description</span>
+              В формате XLS
+              <div id="passwordHelpBlock1" class="form-text">
+                Отчет по управлению "{{department.name}}"
+              </div>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="Export2Doc('exportContent', 'Территориальные органы');">
+              <span class="material-icons">description</span>
+              В формате DOC
+              <div id="passwordHelpBlock2" class="form-text">
+                Отчет по управлению "{{department.name}}"
+              </div>
+            </a>
+          </li>
+        </ul>
+{% endblock %}
+{% block content %}
+<style type="text/css">
+	#div_id_name, #id_name{
+		overflow-y: scroll;
+		max-height: 100px;
+		border-radius: 5px;
+		padding: 5px;
+		border:1px solid white;
+		color: white;
+	}
+
+</style>
+
+<div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center mt-5">
+      <h1 class="display-4">ТЕЛЕФОННЫЙ СПРАВОЧНИК</h1>
+      <p class="lead">сотрудников управления "{{department.name}}"</p>
+</div>
+
+<div class="container">
+  <div id="exportContent">
+<table id="toExcel" class="table table-bordered mt-5">
+  <thead>
+    <tr>
+      <th scope="col">ФИО</th>
+      <th scope="col">Должность</th>
+      <th scope="col">Городской номер телефона</th>
+      <th scope="col">Внутренний номер телефона</th>
+      <th scope="col">Факс</th>
+      <th scope="col">Адрес электронной почты</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th style="font-size: 22px; background-color: #6b9be8;" class="text-center" colspan="6">{{department.name}}</th>
+    </tr>
+    {% for sub_department in department.sub_department.all %}
+    <tr>
+      <th style="background-color: #b0c6e8;" class="text-center" colspan="6">{{sub_department.name}}</th>
+    </tr>
+      {% for customer in sub_department.user_sub_department.all %}
+      {% if customer.department == department %}
+        <tr>
+          <td>{{customer.name}}</td>
+          <td>{{customer.position}}</td>
+          <td>{{customer.city_phone_number}}</td>
+          <td>{{customer.inner_phone_number}}</td>
+          <td>{{customer.fax}}</td>
+          <td>{{customer.email}}</td>
+        </tr>
+      {% else %}
+      {% endif %}
+      {% endfor %}
+    {% endfor %}
+  </tbody>
+</table>
+    </div>
+</div>
+<script>
+function Export2Doc(element, filename = ''){
+    var preHtml = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Export HTML To Doc</title><style>table, th, td {border: 1px solid black;}</style></head><body>";
+    var postHtml = "</body></html>";
+    var html = preHtml+document.getElementById(element).innerHTML+postHtml;
+
+    var blob = new Blob(['\ufeff', html],{
+        type: 'application/msword'
+    });
+
+    var url = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(html)
+
+    filename = filename?filename+'.doc': 'document.doc';
+
+    var downloadLink = document.createElement("a");
+
+    document.body.appendChild(downloadLink);
+
+    if(navigator.msSaveOrOpenBlob){
+        navigator.msSaveOrOpenBlob(blob, filename);
+    }else{
+        downloadLink.href = url;
+
+        downloadLink.download = filename;
+
+        downloadLink.click();
+    }
+
+    document.body.removeChild(downloadLink);
+
+
+}
+
+</script>
+<script>
+  function exceller() {
+    var uri = 'data:application/vnd.ms-excel;base64,',
+      template = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>{worksheet}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--><style>table, th, td {border: 1px solid black;}</style></head><body><table>{table}</table></body></html>',
+      base64 = function(s) {
+        return window.btoa(unescape(encodeURIComponent(s)))
+      },
+      format = function(s, c) {
+        return s.replace(/{(\w+)}/g, function(m, p) {
+          return c[p];
+        })
+      }
+    var toExcel = document.getElementById("toExcel").innerHTML;
+    var ctx = {
+      worksheet: name || '',
+      table: toExcel
+    };
+    var link = document.createElement("a");
+    link.download = "Территориальные органы.xls";
+    link.href = uri + base64(format(template, ctx))
+    link.click();
+  }
+</script>
+{% endblock %}

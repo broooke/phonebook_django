@@ -1,0 +1,143 @@
+{% extends 'navbar.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block nav%}
+<li class="nav-item mr-2">
+  <button class="btn btn-outline-light" onclick="Export2Doc('exportContent', 'phonebook_{{time}}');">Скачать в DOC</button>
+</li>
+<li class="nav-item mr-2">
+  <a href="{% url 'pdf_download_1' %}"><button class="btn btn-outline-light">Скачать в PDF</button></a>
+</li>
+<li class="nav-item mr-2">
+  <button onclick="exceller()" class="btn btn-outline-light">Скачать в XLS</button>
+</li>
+{% endblock %}
+{% block content %}
+<style type="text/css">
+	#div_id_name, #id_name{
+		overflow-y: scroll;
+		max-height: 100px;
+		border-radius: 5px;
+		padding: 5px;
+		border:1px solid white;
+		color: white;
+	}
+	@font-face { font-family: Arial; src: url(); }
+    body{
+      font-family: Arial, sans-serif;
+    }
+  .controls{
+    display: grid;
+  }
+  
+</style>
+
+
+<div style="background-color: gray; color: white;" class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center mt-5">
+      <h1 class="display-4">ТЕЛЕФОННЫЙ СПРАВОЧНИК</h1>
+      <p class="lead">сотрудников центрального аппарата Федерального агентства водных ресурсов по состоянию на {{time}}</p>
+</div>
+
+<div style="background-color: gray;" class="container">
+  <form method="get">
+    {{myFilter.form|crispy}}
+		<input class="btn btn-outline-light" type="submit" value="Поиск">
+  </form>
+  <div id="exportContent">
+      <table id="toExcel" class="table table-bordered table-dark mt-5">
+        <thead>
+          <tr>
+            <th class="text-center" scope="col">#</th>
+            <th class="text-center" scope="col">ФИО</th>
+            <th class="text-center" scope="col">Должность</th>
+            <th class="text-center" scope="col">Городской номер телефона</th>
+            <th class="text-center" scope="col">Внутренний номер телефона</th>
+            <th class="text-center" scope="col">Номер кабинета</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for department in departments %}
+          <tr>
+            <th style="font-size: 22px;" class="text-center bg-primary " colspan="6">{{department.name}}</th>
+          </tr>
+          {% for sub_department in department.sub_department.all %}
+          <tr>
+            <th class="text-center bg-info" colspan="6">{{sub_department.name}}</th>
+          </tr>
+            {% for customer in sub_department.user_sub_department.all %}
+            {% if customer.department == department %}
+              <tr>
+                <th class="text-center" scope="row">{{customer.id}}</th>
+                <td class="text-center">{{customer.name}}</td>
+                <td class="text-center">{{customer.position}}</td>
+                <td class="text-center">{{customer.city_phone_number}}</td>
+                <td class="text-center">{{customer.inner_phone_number}}</td>
+                <td class="text-center">{{customer.number_room}}</td>
+              </tr>
+            {% else %}
+            {% endif %}
+            {% endfor %}
+          {% endfor %}
+        {% endfor %}
+        </tbody>
+      </table>
+  </div>
+</div>
+<script>
+function Export2Doc(element, filename = ''){
+    var preHtml = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Export HTML To Doc</title><style>table, th, td {border: 1px solid black;}</style></head><body>";
+    var postHtml = "</body></html>";
+    var html = preHtml+document.getElementById(element).innerHTML+postHtml;
+
+    var blob = new Blob(['\ufeff', html],{
+        type: 'application/msword'
+    });
+
+    var url = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(html)
+
+    filename = filename?filename+'.doc': 'document.doc';
+
+    var downloadLink = document.createElement("a");
+
+    document.body.appendChild(downloadLink);
+
+    if(navigator.msSaveOrOpenBlob){
+        navigator.msSaveOrOpenBlob(blob, filename);
+    }else{
+        downloadLink.href = url;
+
+        downloadLink.download = filename;
+
+        downloadLink.click();
+    }
+
+    document.body.removeChild(downloadLink);
+
+
+}
+
+</script>
+<script>
+  function exceller() {
+    var uri = 'data:application/vnd.ms-excel;base64,',
+      template = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>{worksheet}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--><style>table, th, td {border: 1px solid black;}</style><meta charset="UTF-8"></head><body><table>{table}</table></body></html>',
+      base64 = function(s) {
+        return window.btoa(unescape(encodeURIComponent(s)))
+      },
+      format = function(s, c) {
+        return s.replace(/{(\w+)}/g, function(m, p) {
+          return c[p];
+        })
+      }
+    var toExcel = document.getElementById("toExcel").innerHTML;
+    var ctx = {
+      worksheet: name || '',
+      table: toExcel
+    };
+    var link = document.createElement("a");
+    link.download = "PhoneBook_{{time}}.xls";
+    link.href = uri + base64(format(template, ctx))
+    link.click();
+  }
+</script>
+{% endblock %}
