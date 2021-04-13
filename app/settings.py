@@ -20,12 +20,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '-6))5ey4*n1!9a*3n2k_k=s8w!jj3t_f^_3pp#c8pv9&6z4-2_'
+SECRET_KEY = 'SECRET_KEY'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1','new.phonebook.favr.ru','95.173.158.68','192.168.70.28','95.173.144.66','95.173.144.133','phonebook.favr.ru']
+ALLOWED_HOSTS = ['localhost']
 
 
 # Application definition
@@ -83,9 +83,9 @@ WSGI_APPLICATION = 'app.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'phonebook',
-        'USER': 'phonebook_user',
-        'PASSWORD': 'phonebook2021db',
+        'NAME': 'name_db',
+        'USER': 'user_db',
+        'PASSWORD': 'password_db',
         'HOST': 'localhost',
         'PORT': '',
     }
